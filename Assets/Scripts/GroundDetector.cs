@@ -14,7 +14,10 @@ public class GroundDetector : MonoBehaviour
 
     public void SetGroundParentState(GameObject playerObject)
     {
-        if (collisionObjects.Count > 0)
+        if (collisionObjects.Count <= 0)
+            return;
+
+        if (collisionObjects[0].gameObject.tag != "MovingGround")
             playerObject.transform.SetParent(collisionObjects[0].gameObject.transform);
         else
             playerObject.transform.SetParent(null);

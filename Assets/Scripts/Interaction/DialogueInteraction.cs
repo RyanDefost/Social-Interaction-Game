@@ -9,16 +9,17 @@ public class DialogueInteraction : Interactable
 
     [SerializeField] private bool _isGlobalDialogue = false;
 
+    [SerializeField] bool _LockAfterDisplay = false;
+    private bool _isTextLocked = false;
+
     [SerializeField] private GameObject _textBox;
     private DialogueText _textDisplayer;
     private DialogueManager _manager;
 
-    public UnityEvent OnEndDialogue = new UnityEvent();
-
-    private int _localCount;
-    private bool _isTextLocked;
+    [HideInInspector] public UnityEvent OnEndDialogue = new UnityEvent();
 
     private bool _isSingleDilogue;
+    private int _localCount;
     private int _currentDialogueSegment;
     private void Awake()
     {
@@ -26,15 +27,19 @@ public class DialogueInteraction : Interactable
         _manager = FindObjectOfType<DialogueManager>();
 
         _isSingleDilogue = _dialogueSegments.Count <= 1 ? true : false;
+        _manager.OnLockingText.AddListener(SetLockedState);
     }
 
+    /// <summary>
+    /// Logic for Global Dialog that start at the beginning of the scene.
+    /// </summary>
     private void Update()
     {
         if (!_isGlobalDialogue)
             return;
 
         if (_textBox.activeSelf)
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
                 StartDialogue();
     }
 
@@ -45,12 +50,20 @@ public class DialogueInteraction : Interactable
         _player.SetMovability(false);
 
         if (!_textBox.activeSelf)
+        {
+            Debug.Log("ACTIVATING THE TEXTBOX");
             _textBox.SetActive(true);
+        }
 
-        if (_isTextLocked)
+        if (_isTextLocked && _LockAfterDisplay)
         {
             _textDisplayer.DisplayText(_fallbackText[0]);
-            _localCount++;
+
+            if (_localCount > 0)
+                EndDialogue();
+            else
+                _localCount++;
+
             return;
         }
 
@@ -59,11 +72,13 @@ public class DialogueInteraction : Interactable
         if (_dialogueSegments.Count == 0)
             _textDisplayer.DisplayText(_fallbackText[0]);
 
-        if (_localCount >= _dialogueSegments[_currentDialogueSegment].Texts.Count || _isTextLocked)
+        if (_localCount >= _dialogueSegments[_currentDialogueSegment].Texts.Count)
         {
             EndDialogue();
             return;
         }
+
+        Debug.Log(_textDisplayer);
 
         _textDisplayer.DisplayText(_dialogueSegments[_currentDialogueSegment].Texts[_localCount]);
         _localCount++;
@@ -74,6 +89,9 @@ public class DialogueInteraction : Interactable
     private void EndDialogue()
     {
         OnEndDialogue?.Invoke();
+
+        if (_LockAfterDisplay)
+            _manager.LockOtherTexts();
 
         _textDisplayer.ResetText();
         _textBox.SetActive(false);
@@ -95,6 +113,8 @@ public class DialogueInteraction : Interactable
     }
 
     public bool GetGlobalStatus() => _isGlobalDialogue;
+    private void SetLockedState() => _isTextLocked = true;
+
 }
 
 [System.Serializable]

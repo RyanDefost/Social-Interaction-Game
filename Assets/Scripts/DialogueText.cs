@@ -1,16 +1,16 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class DialogueText : MonoBehaviour
 {
     [SerializeField] private float _textSpeed;
     [SerializeField] private float _minSpeed;
-    private TextMeshProUGUI _text;
+    private Text _text;
 
     private Coroutine _currentCoroutine;
 
-    private void Start() => _text = GetComponentInChildren<TextMeshProUGUI>();
+    private void Start() => _text = GetComponentInChildren<Text>();
 
     public void DisplayText(string dialog)
     {
@@ -31,7 +31,6 @@ public class DialogueText : MonoBehaviour
         string currentText = "";
 
         float speed = _textSpeed / charArray.Length;
-        Debug.Log(speed);
         if (speed > _minSpeed)
             speed = _minSpeed;
 

@@ -5,14 +5,21 @@ using UnityEngine;
 public class TileMovement : MonoBehaviour
 {
     [SerializeField] private float _speed = 1;
-
     private Interactor _interactor;
+    private Animator _animator;
+    private SpriteRenderer _spriteRenderer;
 
     private bool _isMoving = false;
     private bool _firstMoveLoop = false;
     private bool _canMove = true;
 
-    private void Start() => _interactor = gameObject.GetComponentInChildren<Interactor>();
+    private void Start()
+    {
+        _interactor = gameObject.GetComponentInChildren<Interactor>();
+
+        _animator = GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+    }
 
     private void Update()
     {
@@ -22,16 +29,32 @@ public class TileMovement : MonoBehaviour
         _firstMoveLoop = true;
 
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+        {
             StartCoroutine(Move(Vector3.up));
+            SetAnimation(Vector2.up, "MoveUp");
+        }
 
         else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        {
             StartCoroutine(Move(Vector3.left));
+            SetAnimation(Vector2.left, "MoveSide");
+        }
 
         else if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+        {
             StartCoroutine(Move(Vector3.down));
+            SetAnimation(Vector2.down, "MoveForward");
+        }
 
         else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        {
             StartCoroutine(Move(Vector3.right));
+            SetAnimation(Vector2.right, "MoveSide");
+        }
+        else
+        {
+            //_animator.Play("TilePlayer");
+        }
     }
 
     private IEnumerator Move(Vector3 moveDiraction)
@@ -75,6 +98,12 @@ public class TileMovement : MonoBehaviour
         }
 
         _isMoving = false;
+    }
+
+    private void SetAnimation(Vector2 diraction, string animationName)
+    {
+        _spriteRenderer.flipX = diraction.x < 0 ? true : false;
+        _animator.Play(animationName);
     }
 
     public void SetMovability(bool canMove) => _canMove = canMove;

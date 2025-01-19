@@ -19,7 +19,8 @@ public class AcceleratePlatform : MonoBehaviour
     {
         Rigidbody2D rigidbody2D = gameObject.GetComponent<Rigidbody2D>();
 
-        rigidbody2D.AddForce(diraction * accelerationAmount);
+        //rigidbody2D.AddForce(diraction * accelerationAmount);
+        rigidbody2D.velocity = (diraction * accelerationAmount);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)

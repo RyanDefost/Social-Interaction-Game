@@ -8,16 +8,32 @@ public class SceneChangeInteraction : Interactable
     [SerializeField] private List<string> _scenes;
     [SerializeField] private float _delay;
 
-    [SerializeField] protected bool _updatesGlobalCount = false;
+    [SerializeField] private bool _updatesGlobalCount = false;
+    [SerializeField] private bool _canInteract = false;
 
     [Space]
     [SerializeField] private SpriteRenderer _transitionFade;
-
+    [SerializeField] private GameObject _indecator;
     private DialogueManager _dialogueManager;
+    private DialogueInteraction _dialogueInteraction;
 
-    private void Awake() => _dialogueManager = FindAnyObjectByType<DialogueManager>();
+    private void Awake()
+    {
+        _dialogueManager = FindAnyObjectByType<DialogueManager>();
+        _dialogueManager.OnLockingText.AddListener(SetInteractable);
 
-    public override void ActivateInteraction() => StartCoroutine(StartSceneChange());
+        _dialogueInteraction = GetComponentInChildren<DialogueInteraction>();
+    }
+
+    public override void ActivateInteraction() => TryStartSceneChange();
+
+    private void TryStartSceneChange()
+    {
+        if (_canInteract)
+            StartCoroutine(StartSceneChange());
+        else
+            _dialogueInteraction.ActivateInteraction();
+    }
 
     private IEnumerator StartSceneChange()
     {
@@ -49,5 +65,11 @@ public class SceneChangeInteraction : Interactable
 
         if (_dialogueManager != null)
             _dialogueManager.IncreaseGlobalCount();
+    }
+
+    private void SetInteractable()
+    {
+        _indecator.SetActive(true);
+        _canInteract = true;
     }
 }
